@@ -11,7 +11,6 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   ListModel<int> _list;
   int _selectedItem;
   int _nextItem; // The next item inserted when the user presses the '+' button.
-  Animation<Offset> offset;
 
   @override
   void initState() {
@@ -25,7 +24,8 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   }
 
   // Used to build list items that haven't been removed.
-  Widget _buildItem(BuildContext context, int index, Animation<double> animation) {
+  Widget _buildItem(
+      BuildContext context, int index, Animation<double> animation) {
     return CardItem(
       animation: animation,
       item: _list[index],
@@ -48,7 +48,8 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   // completed (even though it's gone as far this ListModel is concerned).
   // The widget will be used by the [AnimatedListState.removeItem] method's
   // [AnimatedListRemovedItemBuilder] parameter.
-  Widget _buildRemovedItem(int item, BuildContext context, Animation<double> animation) {
+  Widget _buildRemovedItem(
+      int item, BuildContext context, Animation<double> animation) {
     return CardItem(
       animation: animation,
       item: item,
@@ -60,7 +61,8 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
 
   // Insert the "next item" into the list model.
   void _insert() {
-    final int index = _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
+    final int index =
+        _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
     _list.insert(index, _nextItem++);
   }
 
@@ -162,7 +164,6 @@ class CardItem extends StatelessWidget {
   const CardItem(
       {Key key,
       @required this.animation,
-      this.offset,
       this.onTap,
       this.onDismiss,
       @required this.item,
@@ -173,7 +174,6 @@ class CardItem extends StatelessWidget {
         super(key: key);
 
   final Animation<double> animation;
-  final Animation<Offset> offset;
   final VoidCallback onTap;
   final VoidCallback onDismiss;
   final int item;
@@ -182,7 +182,8 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle textStyle = Theme.of(context).textTheme.display1;
-    if (selected) textStyle = textStyle.copyWith(color: Colors.lightGreenAccent[400]);
+    if (selected)
+      textStyle = textStyle.copyWith(color: Colors.lightGreenAccent[400]);
     return Dismissible(
       onDismissed: (direction) {
         onDismiss();
@@ -192,8 +193,8 @@ class CardItem extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(2.0),
         child: SlideTransition(
-//          axis: Axis.horizontal,
-//          sizeFactor: animation,
+          position: animation
+              .drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: onTap,
