@@ -17,15 +17,14 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
     super.initState();
     _list = ListModel<int>(
       listKey: _listKey,
-      initialItems: <int>[0, 1, 2, 4, 5, 6, 7],
+      initialItems: <int>[0, 1, 2, 3, 4, 5, 6, 7],
       removedItemBuilder: _buildRemovedItem,
     );
     _nextItem = 3;
   }
 
   // Used to build list items that haven't been removed.
-  Widget _buildItem(
-      BuildContext context, int index, Animation<double> animation) {
+  Widget _buildItem(BuildContext context, int index, Animation<double> animation) {
     return CardItem(
       animation: animation,
       item: _list[index],
@@ -38,6 +37,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
       onTap: () {
         setState(() {
           _selectedItem = _selectedItem == _list[index] ? null : _list[index];
+          _remove();
         });
       },
     );
@@ -48,12 +48,15 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   // completed (even though it's gone as far this ListModel is concerned).
   // The widget will be used by the [AnimatedListState.removeItem] method's
   // [AnimatedListRemovedItemBuilder] parameter.
-  Widget _buildRemovedItem(
-      int item, BuildContext context, Animation<double> animation) {
+  Widget _buildRemovedItem(int item, BuildContext context, Animation<double> animation) {
     return CardItem(
       animation: animation,
       item: item,
-//      offset: offset.lerp(0.0, 1.0, animation.value),
+      onDismiss: () {
+        setState(() {
+          _list.removeAt(item);
+        });
+      },
       selected: false,
       // No gesture detector here: we don't want removed items to be interactive.
     );
@@ -61,8 +64,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
 
   // Insert the "next item" into the list model.
   void _insert() {
-    final int index =
-        _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
+    final int index = _selectedItem == null ? _list.length : _list.indexOf(_selectedItem);
     _list.insert(index, _nextItem++);
   }
 
@@ -80,24 +82,10 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('AnimatedList'),
-          actions: <Widget>[
-            IconButton(
-              icon: const Icon(Icons.add_circle),
-              onPressed: _insert,
-              tooltip: 'insert a new item',
-            ),
-            IconButton(
-              icon: const Icon(Icons.remove_circle),
-              onPressed: _remove,
-              tooltip: 'remove the selected item',
-            ),
-          ],
-        ),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: AnimatedList(
+  //            physics: ScrollPhysics(parent: PageScrollPhysics()),
             scrollDirection: Axis.horizontal,
             key: _listKey,
             initialItemCount: _list.length,
@@ -182,8 +170,6 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle textStyle = Theme.of(context).textTheme.display1;
-    if (selected)
-      textStyle = textStyle.copyWith(color: Colors.lightGreenAccent[400]);
     return Dismissible(
       onDismissed: (direction) {
         onDismiss();
@@ -193,12 +179,13 @@ class CardItem extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(2.0),
         child: SlideTransition(
-          position: animation
-              .drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
+          position:
+              animation.drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: onTap,
             child: SizedBox(
+              width: 270.0,
               height: 128.0,
               child: Card(
                 color: Colors.primaries[item % Colors.primaries.length],
