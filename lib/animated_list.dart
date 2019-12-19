@@ -52,11 +52,6 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
     return CardItem(
       animation: animation,
       item: item,
-      onDismiss: () {
-        setState(() {
-          _list.removeAt(item);
-        });
-      },
       selected: false,
       // No gesture detector here: we don't want removed items to be interactive.
     );
@@ -85,7 +80,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: AnimatedList(
-  //            physics: ScrollPhysics(parent: PageScrollPhysics()),
+            //            physics: ScrollPhysics(parent: PageScrollPhysics()),
             scrollDirection: Axis.horizontal,
             key: _listKey,
             initialItemCount: _list.length,
