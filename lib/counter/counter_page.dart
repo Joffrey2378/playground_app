@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 class CounterPage extends StatefulWidget {
@@ -7,36 +9,15 @@ class CounterPage extends StatefulWidget {
 
 class _CounterPageState extends State<CounterPage> with SingleTickerProviderStateMixin {
   AnimationController controller;
-  Animation colorAnimation;
-  Animation sizeAnimation;
-  Animation<double> slideAnimation;
 
   int count = 0;
 
   @override
   void initState() {
     super.initState();
-    controller = AnimationController(vsync: this, duration: Duration(milliseconds: 500));
+    controller = AnimationController(vsync: this, duration: Duration(milliseconds: 300));
 
-    // Defining both color and size animations
-    colorAnimation =
-        ColorTween(begin: Colors.black, end: Colors.white).animate(controller);
-    sizeAnimation = Tween<double>(begin: 50.0, end: 90.0).animate(controller);
-    slideAnimation = kAlwaysCompleteAnimation;
-
-    // Rebuilding the screen when animation goes ahead
-    controller.addListener(() {
-      setState(() {});
-    });
-
-    // Repeat the animation after finish
-//    controller.repeat();
-
-    //For single time
-    //controller.forward()
-
-    //Reverses the animation instead of starting it again and repeats
-//    controller.repeat(reverse: true);
+    controller.addListener(() {});
   }
 
   @override
@@ -56,16 +37,16 @@ class _CounterPageState extends State<CounterPage> with SingleTickerProviderStat
                 backgroundColor: Colors.orange,
                 radius: 50.0,
                 child: Center(
-                  child: RotationTransition(
-                    alignment: Alignment.center,
-                    turns: controller,
-//                    position: slideAnimation
-//                        .drive(Tween(begin: Offset(0.0, -5.0), end: Offset(0.0, 0.0))),
-                    child: Text(
-                      '$count',
-                      style: TextStyle(
-                        fontSize: 50.0,
-//                        color: colorAnimation.value,
+                  child: FadeTransition(
+                    opacity: controller.drive(Tween(begin: 1.0, end: 0.0)),
+                    child: SlideTransition(
+                      position: controller
+                          .drive(Tween(begin: Offset(0.0, 0.0), end: Offset(0.0, -1.1))),
+                      child: Text(
+                        '$count',
+                        style: TextStyle(
+                          fontSize: 50.0,
+                        ),
                       ),
                     ),
                   ),
@@ -73,8 +54,13 @@ class _CounterPageState extends State<CounterPage> with SingleTickerProviderStat
             RaisedButton(
                 child: Text('increment'),
                 onPressed: () {
-                  setState(() {
-                    controller.forward().then((_) => count++);
+                  controller.forward().then((f) {
+                    controller.reverse();
+                  });
+                  Timer(Duration(milliseconds: 300), () {
+                    setState(() {
+                      count++;
+                    });
                   });
                 })
           ],
