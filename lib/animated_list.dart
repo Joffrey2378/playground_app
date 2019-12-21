@@ -177,9 +177,12 @@ class CardItem extends StatelessWidget {
         child: SlideTransition(
           position:
               animation.drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
+//          child: SizeTransition(
+//            sizeFactor: animation,
+//            axis: Axis.horizontal,
           child: SizedBox(
             width: 270.0,
-            height: 128.0,
+            height: 500.0,
             child: Card(
               color: Colors.primaries[item % Colors.primaries.length],
               child: Column(
@@ -201,6 +204,7 @@ class CardItem extends StatelessWidget {
               ),
             ),
           ),
+//          ),
         ),
       ),
     );
