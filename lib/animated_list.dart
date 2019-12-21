@@ -26,6 +26,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   // Used to build list items that haven't been removed.
   Widget _buildItem(BuildContext context, int index, Animation<double> animation) {
     return CardItem(
+      key: UniqueKey(),
       animation: animation,
       item: _list[index],
       selected: _selectedItem == _list[index],
@@ -50,6 +51,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   // [AnimatedListRemovedItemBuilder] parameter.
   Widget _buildRemovedItem(int item, BuildContext context, Animation<double> animation) {
     return CardItem(
+      key: UniqueKey(),
       animation: animation,
       item: item,
       selected: false,
@@ -165,28 +167,37 @@ class CardItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     TextStyle textStyle = Theme.of(context).textTheme.display1;
-    return Dismissible(
-      onDismissed: (direction) {
+    return GestureDetector(
+      onVerticalDragStart: (direction) {
+        print('<<<SWIPE UP>>>');
         onDismiss();
       },
-      direction: DismissDirection.up,
-      key: UniqueKey(),
       child: Padding(
         padding: const EdgeInsets.all(2.0),
         child: SlideTransition(
           position:
               animation.drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onTap,
-            child: SizedBox(
-              width: 270.0,
-              height: 128.0,
-              child: Card(
-                color: Colors.primaries[item % Colors.primaries.length],
-                child: Center(
-                  child: Text('Item $item', style: textStyle),
-                ),
+          child: SizedBox(
+            width: 270.0,
+            height: 128.0,
+            child: Card(
+              color: Colors.primaries[item % Colors.primaries.length],
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      SizedBox(),
+                      IconButton(
+                        onPressed: onTap,
+                        icon: Icon(Icons.clear),
+                      )
+                    ],
+                  ),
+                  Text('Item $item', style: textStyle),
+                  SizedBox()
+                ],
               ),
             ),
           ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:testing_app/counter/counter_page.dart';
+import 'package:testing_app/animated_list.dart';
 
 void main() => runApp(new MyApp());
 
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
             appBar: new AppBar(
               title: Text("List"),
             ),
-            body: CounterPage()
+            body: AnimatedListSample()
 //        GridWidget(inputList: <TwoFieldsObject>[
 //          TwoFieldsObject('Cool!', 'one'),
 //          TwoFieldsObject('Awesome!', 'two'),
