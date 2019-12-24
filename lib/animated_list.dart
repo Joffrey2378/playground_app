@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'custom_bottom_sheet/custom_bottom_sheet.dart';
+
 class AnimatedListSample extends StatefulWidget {
   @override
   _AnimatedListSampleState createState() => _AnimatedListSampleState();
@@ -145,7 +147,7 @@ class ListModel<E> {
 /// the item's value. The text is displayed in bright green if selected is true.
 /// This widget's height is based on the animation parameter, it varies
 /// from 0 to 128 as the animation varies from 0.0 to 1.0.
-class CardItem extends StatelessWidget {
+class CardItem extends StatefulWidget {
   const CardItem(
       {Key key,
       @required this.animation,
@@ -165,18 +167,80 @@ class CardItem extends StatelessWidget {
   final bool selected;
 
   @override
+  _CardItemState createState() => _CardItemState();
+}
+
+class _CardItemState extends State<CardItem> {
+  PanelController _controller = PanelController();
+
+  Widget _panel() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          height: 5.0,
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            IconButton(
+              splashColor: Colors.transparent,
+              onPressed: () {
+                _controller.close();
+              },
+              icon: Icon(Icons.arrow_back),
+            ),
+            Text(
+              'Add an answer',
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 16.0,
+              ),
+            ),
+            SizedBox(
+              width: 150.0,
+            )
+          ],
+        ),
+        SizedBox(
+          height: 20.0,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: TextField(
+            decoration: InputDecoration(hintText: 'Type...', border: InputBorder.none),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _body() {
+    return Align(
+        alignment: Alignment(0.0, 0.6),
+        child: RaisedButton(
+          child: Text('Click me'),
+          onPressed: () {
+            _controller.open();
+          },
+        ));
+  }
+
+  @override
   Widget build(BuildContext context) {
     TextStyle textStyle = Theme.of(context).textTheme.display1;
+    double _panelHeightOpen = MediaQuery.of(context).size.height / 3 * 2;
+    double _panelHeightClosed = 0.0;
     return GestureDetector(
       onVerticalDragStart: (direction) {
         print('<<<SWIPE UP>>>');
-        onDismiss();
+        widget.onDismiss();
       },
       child: Padding(
         padding: const EdgeInsets.all(2.0),
         child: SlideTransition(
-          position:
-              animation.drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
+          position: widget.animation
+              .drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
 //          child: SizeTransition(
 //            sizeFactor: animation,
 //            axis: Axis.horizontal,
@@ -184,22 +248,47 @@ class CardItem extends StatelessWidget {
             width: 270.0,
             height: 500.0,
             child: Card(
-              color: Colors.primaries[item % Colors.primaries.length],
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              color: Colors.primaries[widget.item % Colors.primaries.length],
+              child: Stack(
                 children: <Widget>[
-                  Row(
+                  Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          SizedBox(),
+                          IconButton(
+                            onPressed: widget.onTap,
+                            icon: Icon(Icons.clear),
+                          )
+                        ],
+                      ),
+                      Text('Item ${widget.item}', style: textStyle),
                       SizedBox(),
-                      IconButton(
-                        onPressed: onTap,
-                        icon: Icon(Icons.clear),
-                      )
+                      SlidingUpPanel(
+                        minHeight: 0.0,
+                        maxHeight: 400.0,
+                        parallaxEnabled: true,
+                        body: _body(),
+                        borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(18.0),
+                            topRight: Radius.circular(18.0)),
+                      ),
                     ],
                   ),
-                  Text('Item $item', style: textStyle),
-                  SizedBox()
+                  SlidingUpPanel(
+                    controller: _controller,
+                    maxHeight: _panelHeightOpen,
+                    minHeight: _panelHeightClosed,
+                    parallaxEnabled: false,
+                    backdropEnabled: true,
+                    body: _body(),
+                    panel: _panel(),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
+                    onPanelSlide: (double pos) => setState(() {}),
+                  ),
                 ],
               ),
             ),
