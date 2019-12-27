@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:testing_app/animated_list.dart';
+
+import 'animated_list.dart';
 
 void main() => runApp(new MyApp());
 
