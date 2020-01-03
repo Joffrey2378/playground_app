@@ -29,7 +29,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   Widget _buildItem(BuildContext context, int index, Animation<double> animation) {
     return CardItem(
       key: UniqueKey(),
-      animation: animation,
+      inputAnimation: animation,
       item: _list[index],
       selected: _selectedItem == _list[index],
       onDismiss: () {
@@ -54,7 +54,7 @@ class _AnimatedListSampleState extends State<AnimatedListSample> {
   Widget _buildRemovedItem(int item, BuildContext context, Animation<double> animation) {
     return CardItem(
       key: UniqueKey(),
-      animation: animation,
+      inputAnimation: animation,
       item: item,
       selected: false,
       // No gesture detector here: we don't want removed items to be interactive.
@@ -150,18 +150,18 @@ class ListModel<E> {
 class CardItem extends StatefulWidget {
   const CardItem(
       {Key key,
-      @required this.animation,
+      @required this.inputAnimation,
       this.onTap,
       this.onDismiss,
       @required this.item,
       this.selected: false})
-      : assert(animation != null),
+      : assert(inputAnimation != null),
         assert(item != null && item >= 0),
         assert(selected != null),
         super(key: key);
 
-  final Animation<double> animation;
-  final VoidCallback onTap;
+  final Animation<double> inputAnimation;
+  final Function onTap;
   final VoidCallback onDismiss;
   final int item;
   final bool selected;
@@ -170,8 +170,32 @@ class CardItem extends StatefulWidget {
   _CardItemState createState() => _CardItemState();
 }
 
-class _CardItemState extends State<CardItem> {
-  PanelController _controller = PanelController();
+class _CardItemState extends State<CardItem> with TickerProviderStateMixin {
+  PanelController _panelController = PanelController();
+  AnimationController _slideController;
+  Animation<Offset> _offsetSlide;
+
+  AnimationController _sizeController;
+  Animation<double> _offsetSize;
+
+  @override
+  void initState() {
+    super.initState();
+    _slideController = AnimationController(vsync: this, duration: Duration(seconds: 2));
+    _offsetSlide = Tween(begin: Offset.zero, end: Offset(0.0, -1.1))
+        .animate(CurvedAnimation(parent: _slideController, curve: Curves.easeInExpo));
+
+    _sizeController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 1500));
+    _offsetSize = Tween(begin: 1.0, end: 0.0)
+        .animate(CurvedAnimation(parent: _sizeController, curve: Curves.easeOutQuart));
+  }
+
+  @override
+  void dispose() {
+    _slideController.dispose();
+    super.dispose();
+  }
 
   Widget _panel() {
     return Column(
@@ -186,7 +210,7 @@ class _CardItemState extends State<CardItem> {
             IconButton(
               splashColor: Colors.transparent,
               onPressed: () {
-                _controller.close();
+                _panelController.close();
               },
               icon: Icon(Icons.arrow_back),
             ),
@@ -221,7 +245,7 @@ class _CardItemState extends State<CardItem> {
         child: RaisedButton(
           child: Text('Click me'),
           onPressed: () {
-            _controller.open();
+            _panelController.open();
           },
         ));
   }
@@ -234,68 +258,78 @@ class _CardItemState extends State<CardItem> {
     return GestureDetector(
       onVerticalDragStart: (direction) {
         print('<<<SWIPE UP>>>');
-        widget.onDismiss();
+        deletionWithAnimation();
       },
       child: Padding(
         padding: const EdgeInsets.all(2.0),
         child: SlideTransition(
-          position: widget.animation
-              .drive(Tween(begin: Offset(0.0, -1.0), end: Offset(0.0, 0.0))),
-//          child: SizeTransition(
-//            sizeFactor: animation,
-//            axis: Axis.horizontal,
-          child: SizedBox(
-            width: 270.0,
-            height: 500.0,
-            child: Card(
-              color: Colors.primaries[widget.item % Colors.primaries.length],
-              child: Stack(
-                children: <Widget>[
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          SizedBox(),
-                          IconButton(
-                            onPressed: widget.onTap,
-                            icon: Icon(Icons.clear),
-                          )
-                        ],
-                      ),
-                      Text('Item ${widget.item}', style: textStyle),
-                      SizedBox(),
-                      SlidingUpPanel(
-                        minHeight: 0.0,
-                        maxHeight: 400.0,
-                        parallaxEnabled: true,
-                        body: _body(),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(18.0),
-                            topRight: Radius.circular(18.0)),
-                      ),
-                    ],
-                  ),
-                  SlidingUpPanel(
-                    controller: _controller,
-                    maxHeight: _panelHeightOpen,
-                    minHeight: _panelHeightClosed,
-                    parallaxEnabled: false,
-                    backdropEnabled: true,
-                    body: _body(),
-                    panel: _panel(),
-                    borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(18.0), topRight: Radius.circular(18.0)),
-                    onPanelSlide: (double pos) => setState(() {}),
-                  ),
-                ],
+          position: _offsetSlide,
+          child: SizeTransition(
+            sizeFactor: _offsetSize,
+            axis: Axis.horizontal,
+            child: SizedBox(
+              width: 270.0,
+              height: 500.0,
+              child: Card(
+                color: Colors.primaries[widget.item % Colors.primaries.length],
+                child: Stack(
+                  children: <Widget>[
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            SizedBox(),
+                            IconButton(
+                              onPressed: () {
+                                deletionWithAnimation();
+                              },
+                              icon: Icon(Icons.clear),
+                            )
+                          ],
+                        ),
+                        Text('Item ${widget.item}', style: textStyle),
+                        SizedBox(),
+                        SlidingUpPanel(
+                          minHeight: 0.0,
+                          maxHeight: 400.0,
+                          parallaxEnabled: true,
+                          body: _body(),
+                          borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(18.0),
+                              topRight: Radius.circular(18.0)),
+                        ),
+                      ],
+                    ),
+                    SlidingUpPanel(
+                      controller: _panelController,
+                      maxHeight: _panelHeightOpen,
+                      minHeight: _panelHeightClosed,
+                      parallaxEnabled: false,
+                      backdropEnabled: true,
+                      body: _body(),
+                      panel: _panel(),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(18.0),
+                          topRight: Radius.circular(18.0)),
+                      onPanelSlide: (double pos) => setState(() {}),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-//          ),
         ),
       ),
     );
+  }
+
+  void deletionWithAnimation() {
+    setState(() {
+      _slideController
+          .forward()
+          .then((f) => _sizeController.forward().then((f) => widget.onTap()));
+    });
   }
 }
