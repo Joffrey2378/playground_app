@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'animated_list.dart';
+import 'package:testing_app/pure_animated_list.dart';
 
 void main() => runApp(new MyApp());
 
@@ -13,7 +12,7 @@ class MyApp extends StatelessWidget {
             appBar: new AppBar(
               title: Text("List"),
             ),
-            body: AnimatedListSample()
+            body: PureAnimatedList()
 //        GridWidget(inputList: <TwoFieldsObject>[
 //          TwoFieldsObject('Cool!', 'one'),
 //          TwoFieldsObject('Awesome!', 'two'),
