@@ -10,7 +10,7 @@ class _ListTestsPageState extends State<ListTestsPage> {
 
   @override
   void initState() {
-    list = ['One', 'Two', 'Three', 'Four', 'Five', 'Six'];
+    list = ['1', '2', '3', '4', '5', '6'];
     super.initState();
   }
 
@@ -39,7 +39,7 @@ class _ListWidgetState extends State<ListWidget> {
       width: MediaQuery.of(context).size.width,
       child: ListView.builder(
           physics: ClampingScrollPhysics(),
-          scrollDirection: Axis.horizontal,
+          scrollDirection: Axis.vertical,
           itemCount: widget.inputList.length,
           shrinkWrap: true,
           itemBuilder: (BuildContext context, int index) {
@@ -64,12 +64,20 @@ class _ListWidgetState extends State<ListWidget> {
         child: RefreshIndicator(
           onRefresh: addItemsToList,
           child: ListView.builder(
+//              physics: ClampingScrollPhysics(),
               shrinkWrap: true,
               itemCount: 1,
               itemBuilder: (BuildContext context, int index) {
-                return Container(height: 150.0, color: Colors.orange, child: Center(child: Text(item)));
+                return Container(
+                    height: 150.0,
+                    color: Colors.orange,
+                    child: Center(
+                        child: Text(
+                      item,
+                      style: TextStyle(fontSize: 40.0),
+                    )));
               }),
-        ),
+        ), //
       ),
     );
   }
@@ -77,10 +85,10 @@ class _ListWidgetState extends State<ListWidget> {
   Future<void> addItemsToList() async {
     await Future.delayed(Duration(milliseconds: 700));
     setState(() {
-      widget.inputList.add('Seven');
-      widget.inputList.add('Eight');
-      widget.inputList.add('Nine');
-      widget.inputList.add('Ten');
+      widget.inputList.add('7');
+      widget.inputList.add('8');
+      widget.inputList.add('9');
+      widget.inputList.add('10');
     });
     return null;
   }
