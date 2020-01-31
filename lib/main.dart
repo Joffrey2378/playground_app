@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'list_view.dart';
+import 'package:testing_app/chips/chip_demo.dart';
 
 void main() => runApp(new MyApp());
 
@@ -13,7 +12,7 @@ class MyApp extends StatelessWidget {
             appBar: new AppBar(
               title: Text("List"),
             ),
-            body: ListTestsPage()
+            body: ChipDemo()
 //        GridWidget(inputList: <TwoFieldsObject>[
 //          TwoFieldsObject('Cool!', 'one'),
 //          TwoFieldsObject('Awesome!', 'two'),
